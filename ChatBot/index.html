@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <!-- create form -->
+     <form onsubmit="getChatbotAnswer();return false">
+      <input type="text" name="querry" id="querry" placeholder="Ask me anything..." />
+      <button type="submit">Start Chat</button>
+    </form>
+    <div id="result"></div>
+    <!-- Add this inside <head> or before your <script> tag -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
+        
