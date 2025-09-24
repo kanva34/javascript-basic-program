@@ -1,0 +1,97 @@
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  margin: 0;
+  padding: 40px;
+  background: linear-gradient(120deg, #f8fafc 0%, #c7d2fe 60%, #e0e7ff 100%);
+  min-height: 100vh;
+}
+
+#wrapper {
+  max-width: 520px;
+  margin: 48px auto;
+  padding: 40px 32px;
+  background: rgba(30, 34, 44, 0.97);
+  color: #f1f5fa;
+  border-radius: 28px;
+  box-shadow: 0 16px 48px 0 rgba(44, 62, 80, 0.22),
+    0 2px 8px 0 rgba(80, 120, 255, 0.1);
+  border: 2px solid #4f8cff44;
+  backdrop-filter: blur(3px);
+}
+
+h1 {
+  text-align: center;
+  letter-spacing: 2.5px;
+  margin-bottom: 36px;
+  font-size: 2.4rem;
+  color: #2563eb;
+  text-shadow: 0 3px 12px #23272f33;
+}
+
+.form {
+  display: flex;
+
+  justify-content: center;
+  margin-bottom: 36px;
+  gap: 16px;
+}
+
+.form input[type="text"] {
+  padding: 16px 18px;
+
+  font-size: 20px;
+  border-radius: 10px;
+  border: 2px solid #bfc9d1;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+  background: #f8fafc;
+  color: #23272f;
+  box-shadow: 0 3px 12px #4f8cff13;
+}
+
+.form input[type="text"]:focus {
+  border: 2.5px solid #2563eb;
+  box-shadow: 0 0 0 3px #2563eb33;
+}
+
+.form input[type="submit"] {
+  padding: 16px 24px;
+  margin-top: 12px;
+  margin-left: 160px;
+  font-size: 20px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg, #2563eb 60%, #4f8cff 100%);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  font-weight: 700;
+  box-shadow: 0 3px 12px #2563eb22;
+}
+
+.form input[type="submit"]:hover {
+  background: linear-gradient(90deg, #4f8cff 60%, #2563eb 100%);
+  transform: translateY(-3px) scale(1.05);
+}
+
+.resultParas {
+  background: rgba(37, 99, 235, 0.1);
+  border-radius: 14px;
+  padding: 22px 20px;
+  margin-top: 22px;
+  box-shadow: 0 2px 8px #2563eb13;
+}
+
+.resultParas p {
+  font-size: 22px;
+  margin: 14px 0;
+  color: #dbeafe;
+  text-shadow: 0 2px 8px #23272f22;
+}
+
+.resultParas p span {
+  font-weight: bold;
+  color: #ffb300;
+  text-shadow: 0 2px 8px #23272f44;
+  letter-spacing: 1.5px;
+}

@@ -1,0 +1,92 @@
+html {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  transition: background 0.3s;
+}
+
+.canvas {
+  margin: 80px auto;
+  width: 90%;
+  max-width: 600px;
+  text-align: center;
+  background: #f5f5f5;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 40px 20px;
+}
+
+h1 {
+  margin-bottom: 32px;
+  font-size: 2.2rem;
+  color: #222;
+}
+
+.button {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #333;
+  display: inline-block;
+  border-radius: 50%;
+  margin: 0 12px 24px 12px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+#grey {
+  background: grey;
+}
+
+#white {
+  background: #fff;
+  border: 2px solid #bbb;
+}
+
+#blue {
+  background: #3498db;
+}
+
+#yellow {
+  background: #f7ca18;
+}
+
+#green {
+  background: #27ae60;
+}
+
+#purple {
+  background: #9b59b6;
+}
+
+#red {
+  background: #e74c3c;
+}
+
+#orange {
+  background: #f39c12;
+}
+
+h2 {
+  color: #444;
+  font-weight: 400;
+  margin-top: 24px;
+  font-size: 1.1rem;
+}
+
+h2 span {
+  display: block;
+  color: #888;
+  font-size: 0.98rem;
+  margin-top: 6px;
+}
