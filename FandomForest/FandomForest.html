@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FandomForest 🦊📚</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+    </script>
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap");
+      body {
+        background: #0a0f1e;
+        color: #e2e8f0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      .glass {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .card-hover:hover {
+        transform: translateY(-8px);
+        border-color: #6366f1;
+        box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.7);
+      }
+      .active-folder {
+        background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+        color: white !important;
+      }
+      .loader {
+        border-top-color: #6366f1;
+        animation: spinner 0.6s linear infinite;
+      }
+      @keyframes spinner {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236366f1'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 1em;
+      }
+    </style>
+  </head>
+  <body class="p-4 md:p-10">
+    <div class="max-w-7xl mx-auto">
+      <header
+        class="flex flex-wrap justify-between items-center mb-10 gap-6 glass p-8 rounded-[2rem]"
+      >
+        <div>
+          <h1
+            class="text-4xl font-extrabold text-white tracking-tighter bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent"
+          >
+            FandomForest
+          </h1>
+          <p class="text-slate-500 text-sm font-medium">
+            The Ultimate Library for your Weeb Needs
+          </p>
+        </div>
+        <div class="flex gap-3">
+          <button
+            onclick="exportToPDF()"
+            class="bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500 hover:text-white px-5 py-2.5 rounded-2xl text-xs font-bold transition-all"
+          >
+            Export PDF
+          </button>
+          <button
+            onclick="toggleAddModal()"
+            class="bg-indigo-600 px-6 py-2.5 rounded-2xl text-xs font-bold shadow-xl shadow-indigo-500/30 hover:bg-indigo-500 transition-all"
+          >
+            + Add New Entry
+          </button>
+        </div>
+      </header>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <aside class="lg:col-span-3 space-y-6">
+          <div class="glass p-6 rounded-[2rem]">
+            <h2
+              class="text-xs font-black text-slate-500 uppercase mb-6 tracking-[0.2em]"
+            >
+              Folders
+            </h2>
+            <nav id="folderList" class="space-y-3"></nav>
+            <button
+              onclick="createNewFolder()"
+              class="w-full mt-6 border border-dashed border-slate-700 py-3 rounded-2xl text-xs text-slate-500 hover:text-indigo-400 hover:border-indigo-400 transition-all font-bold"
+            >
+              + Create Folder
+            </button>
+          </div>
+
+          <div class="glass p-6 rounded-[2rem]">
+            <h2
+              class="text-xs font-black text-purple-400 uppercase mb-4 tracking-[0.2em]"
+            >
+              Quick Import
+            </h2>
+            <input
+              type="file"
+              id="bulkFileInput"
+              accept=".txt,.pdf"
+              class="text-xs text-slate-500 mb-4 w-full"
+            />
+            <p class="text-[10px] text-slate-600 mb-2 font-bold">IMPORT TO:</p>
+            <select
+              id="importTargetFolder"
+              class="w-full bg-slate-900 rounded-xl p-3 text-xs mb-4 border-none outline-none ring-1 ring-white/10"
+            ></select>
+            <button
+              onclick="handleBulkImport()"
+              class="w-full bg-slate-800 py-3 rounded-2xl text-xs font-bold hover:bg-slate-700 transition-all"
+            >
+              Bulk Upload (.txt/.pdf)
+            </button>
+          </div>
+        </aside>
+
+        <main class="lg:col-span-9 space-y-8">
+          <div class="relative group">
+            <span
+              class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors font-bold"
+              >🔍</span
+            >
+            <input
+              id="searchInput"
+              oninput="render()"
+              type="text"
+              placeholder="Search your library (Titles, Folders, Types)..."
+              class="bg-slate-800/40 w-full rounded-[1.5rem] pl-14 pr-6 py-4 border-none focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-inner"
+            />
+          </div>
+          <div
+            id="bookmarkGrid"
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+          ></div>
+        </main>
+      </div>
+    </div>
+
+    <div
+      id="detailModal"
+      class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl z-[70] flex items-center justify-center p-4"
+    >
+      <div
+        class="glass bg-slate-950 w-full max-w-3xl rounded-[2.5rem] overflow-hidden relative max-h-[90vh] overflow-y-auto border border-white/10"
+      >
+        <button
+          onclick="closeModal()"
+          class="absolute top-6 right-8 text-4xl text-slate-600 hover:text-white transition-colors"
+        >
+          &times;
+        </button>
+        <div
+          id="modalLoading"
+          class="p-24 flex flex-col items-center justify-center hidden"
+        >
+          <div
+            class="loader ease-linear rounded-full border-4 border-t-4 border-slate-800 h-16 w-16 mb-4"
+          ></div>
+          <p
+            class="text-indigo-400 font-bold animate-pulse text-xs tracking-widest"
+          >
+            FETCHING FROM MAL...
+          </p>
+        </div>
+        <div id="modalBody" class="p-10"></div>
+      </div>
+    </div>
+
+    <div
+      id="addModal"
+      class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-[60] flex items-center justify-center p-4"
+    >
+      <div
+        class="glass bg-slate-900 w-full max-w-md p-8 rounded-[2.5rem] border border-white/10 shadow-2xl"
+      >
+        <h2 class="text-2xl font-black mb-8 text-white tracking-tight">
+          Add New Content
+        </h2>
+        <div class="space-y-5">
+          <div>
+            <label class="text-[10px] font-bold text-slate-500 ml-2 mb-1 block"
+              >TITLE</label
+            >
+            <input
+              id="titleInput"
+              type="text"
+              placeholder="e.g. Solo Leveling"
+              class="w-full bg-slate-800 rounded-2xl p-4 border-none outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                class="text-[10px] font-bold text-slate-500 ml-2 mb-1 block"
+                >TYPE</label
+              >
+              <select
+                id="typeSelect"
+                class="w-full bg-slate-800 rounded-2xl p-4 border-none outline-none"
+              >
+                <option value="Anime">Anime</option>
+                <option value="Manga">Manga</option>
+                <option value="Manhwa">Manhwa</option>
+                <option value="Manhua">Manhua</option>
+                <option value="Light Novel">Light Novel</option>
+                <option value="Novel">Novel</option>
+                <option value="Comic">Comic</option>
+              </select>
+            </div>
+            <div>
+              <label
+                class="text-[10px] font-bold text-slate-500 ml-2 mb-1 block"
+                >STATUS</label
+              >
+              <select
+                id="statusSelect"
+                class="w-full bg-slate-800 rounded-2xl p-4 border-none outline-none"
+              >
+                <option value="Watching">Watching</option>
+                <option value="Reading">Reading</option>
+                <option value="Completed">Completed</option>
+                <option value="Plan to Read">On Hold</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-slate-500 ml-2 mb-1 block"
+              >FOLDER</label
+            >
+            <select
+              id="folderSelect"
+              class="w-full bg-slate-800 rounded-2xl p-4 border-none outline-none"
+            ></select>
+          </div>
+          <button
+            onclick="addItem()"
+            class="w-full bg-indigo-600 py-4 mt-4 rounded-2xl font-bold hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20 text-white"
+          >
+            Save Entry
+          </button>
+          <button
+            onclick="toggleAddModal()"
+            class="w-full text-slate-500 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors"
+          >
+            Discard
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let bookmarks = JSON.parse(localStorage.getItem("zen_max_data")) || [];
+      let folders = JSON.parse(localStorage.getItem("zen_max_folders")) || [
+        "Default",
+        "Anime",
+        "Reading List",
+      ];
+      let currentFolder = "all";
+
+      function save() {
+        localStorage.setItem("zen_max_data", JSON.stringify(bookmarks));
+        localStorage.setItem("zen_max_folders", JSON.stringify(folders));
+        render();
+      }
+
+      // --- API & Info ---
+      async function showInfo(title, type) {
+        const modal = document.getElementById("detailModal");
+        const body = document.getElementById("modalBody");
+        const loader = document.getElementById("modalLoading");
+
+        modal.classList.remove("hidden");
+        body.innerHTML = "";
+        loader.classList.remove("hidden");
+
+        try {
+          let searchEndpoint;
+          let isAnime = false;
+
+          switch (type.toLowerCase()) {
+            case "anime":
+              searchEndpoint = "anime";
+              isAnime = true;
+              break;
+            case "manga":
+            case "manhwa":
+            case "manhua":
+            case "light novel":
+            case "novel":
+            case "comic":
+              searchEndpoint = "manga";
+              break;
+            default:
+              searchEndpoint = "manga";
+          }
+
+          const res = await fetch(
+            `https://api.jikan.moe/v4/${searchEndpoint}?q=${encodeURIComponent(
+              title
+            )}&limit=1`
+          );
+          const { data } = await res.json();
+          const info = data[0];
+
+          loader.classList.add("hidden");
+
+          if (!info) {
+            body.innerHTML = `<div class="text-center py-20"><p class="text-slate-500">No specific API data found for this ${type}.</p></div>`;
+            return;
+          }
+
+          const genres = info.genres?.map((g) => g.name).join(", ") || "N/A";
+
+          let detailsHTML = `
+            <div class="flex flex-col md:flex-row gap-10">
+              <img src="${
+                info.images?.jpg?.large_image_url || info.images?.jpg?.image_url
+              }" 
+                   class="w-full md:w-64 h-96 object-cover rounded-[2rem] shadow-2xl border border-white/10" />
+              <div class="flex-1">
+                <span class="bg-indigo-600/20 text-indigo-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 inline-block">${type}</span>
+                <h2 class="text-4xl font-black mb-4 text-white">${
+                  info.title
+                }</h2>
+                <div class="flex gap-4 mb-6">
+                  <div class="text-center bg-slate-900 p-3 rounded-2xl border border-white/5 min-w-[80px]">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase">Score</p>
+                    <p class="text-lg font-black text-indigo-400">${
+                      info.score || "N/A"
+                    }</p>
+                  </div>
+                  <div class="text-center bg-slate-900 p-3 rounded-2xl border border-white/5 min-w-[80px]">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase">${
+                      isAnime ? "Episodes" : "Chapters"
+                    }</p>
+                    <p class="text-lg font-black text-purple-400">${
+                      isAnime ? info.episodes || "?" : info.chapters || "?"
+                    }</p>
+                  </div>
+                  <div class="text-center bg-slate-900 p-3 rounded-2xl border border-white/5 min-w-[80px]">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase">${
+                      isAnime ? "Season" : "Volumes"
+                    }</p>
+                    <p class="text-lg font-black text-green-400">${
+                      isAnime ? info.season || "?" : info.volumes || "?"
+                    }</p>
+                  </div>
+                </div>
+                <div class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Status</div>
+                <p class="text-sm text-slate-300 mb-4">${
+                  info.status || "N/A"
+                }</p>
+                <div class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Genres</div>
+                <p class="text-sm text-slate-300 mb-4">${genres}</p>
+                <h4 class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Synopsis</h4>
+                <p class="text-sm text-slate-300 leading-relaxed mb-8">${
+                  info.synopsis || "No description available."
+                }</p>
+                ${
+                  isAnime && info.trailer?.url
+                    ? `<a href="${info.trailer.url}" target="_blank" class="inline-block bg-white text-black px-8 py-3 rounded-2xl font-black text-xs hover:bg-indigo-400 transition-colors mb-4">Watch Trailer →</a>`
+                    : ""
+                }
+                <a href="${
+                  info.url
+                }" target="_blank" class="inline-block bg-indigo-600 text-white px-8 py-3 rounded-2xl font-black text-xs hover:bg-indigo-400 transition-colors">VIEW ON MAL →</a>
+              </div>
+            </div>
+          `;
+
+          body.innerHTML = detailsHTML;
+        } catch (e) {
+          loader.classList.add("hidden");
+          body.innerHTML = `<p class="text-center text-red-400 font-bold">Failed to fetch data. Please try again.</p>`;
+          console.error(e);
+        }
+      }
+
+      // --- Logic Functions ---
+      window.setFolder = (f) => {
+        currentFolder = f;
+        render();
+      };
+      window.toggleAddModal = () =>
+        document.getElementById("addModal").classList.toggle("hidden");
+      window.closeModal = () =>
+        document.getElementById("detailModal").classList.add("hidden");
+
+      window.createNewFolder = () => {
+        const n = prompt("Enter Unique Folder Name:");
+        if (n && !folders.includes(n)) {
+          folders.push(n);
+          save();
+        }
+      };
+
+      window.deleteFolder = (f, e) => {
+        e.stopPropagation();
+        if (f === "Default") return alert("Default folder cannot be deleted.");
+        if (confirm(`Delete "${f}"? Items inside will move to "Default".`)) {
+          bookmarks = bookmarks.map((b) =>
+            b.folder === f ? { ...b, folder: "Default" } : b
+          );
+          folders = folders.filter((folder) => folder !== f);
+          if (currentFolder === f) currentFolder = "all";
+          save();
+        }
+      };
+
+      window.deleteItem = (id) => {
+        if (confirm("Remove this entry?")) {
+          bookmarks = bookmarks.filter((b) => b.id !== id);
+          save();
+        }
+      };
+
+      window.toggleFav = (id) => {
+        bookmarks = bookmarks.map((b) =>
+          b.id === id ? { ...b, favorite: !b.favorite } : b
+        );
+        save();
+      };
+
+      window.updateStatus = (id, s) => {
+        bookmarks = bookmarks.map((b) =>
+          b.id === id ? { ...b, status: s } : b
+        );
+        save();
+      };
+
+      window.addItem = () => {
+        const title = document.getElementById("titleInput").value.trim();
+        if (!title) return;
+        bookmarks.push({
+          id: Date.now(),
+          title,
+          type: document.getElementById("typeSelect").value,
+          folder: document.getElementById("folderSelect").value,
+          status: document.getElementById("statusSelect").value,
+          favorite: false,
+        });
+        document.getElementById("titleInput").value = "";
+        toggleAddModal();
+        save();
+      };
+
+      async function handleBulkImport() {
+        const fileInput = document.getElementById("bulkFileInput");
+        const target = document.getElementById("importTargetFolder").value;
+        if (!fileInput.files[0]) return alert("Select a file first");
+
+        const format = (
+          prompt("Enter file format: txt or pdf") || ""
+        ).toLowerCase();
+        if (format !== "txt" && format !== "pdf")
+          return alert("Invalid format! Only 'txt' or 'pdf' allowed.");
+
+        let names = [];
+
+        if (format === "txt") {
+          names = (await fileInput.files[0].text())
+            .split(/\r?\n/)
+            .map((n) => n.trim())
+            .filter((n) => n);
+        } else if (format === "pdf") {
+          const file = fileInput.files[0];
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items
+              .map((item) => item.str)
+              .join(" ")
+              .split(/\r?\n/)
+              .map((n) => n.trim())
+              .filter((n) => n);
+            names.push(...pageText);
+          }
+        }
+
+        const existingTitles = bookmarks.map((b) => b.title.toLowerCase());
+        names = [...new Set(names.map((n) => n.trim()))].filter(
+          (n) => !existingTitles.includes(n.toLowerCase())
+        );
+
+        if (names.length === 0) return alert("No new unique entries found!");
+
+        names.forEach((n) => {
+          bookmarks.push({
+            id: Date.now() + Math.random(),
+            title: n,
+            type: "Anime",
+            folder: target,
+            status: "Watching",
+            favorite: false,
+          });
+        });
+
+        fileInput.value = "";
+        save();
+        alert("Batch Import Success!");
+      }
+
+      function render() {
+        const fList = document.getElementById("folderList");
+        const grid = document.getElementById("bookmarkGrid");
+        const query = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+
+        fList.innerHTML = `<div onclick="setFolder('all')" class="cursor-pointer flex justify-between items-center px-5 py-3 rounded-2xl text-xs font-bold transition-all ${
+          currentFolder === "all"
+            ? "active-folder"
+            : "hover:bg-white/5 text-slate-500"
+        }"><span>📂 All Content</span></div>`;
+        folders.forEach((f) => {
+          fList.innerHTML += `
+                <div onclick="setFolder('${f}')" class="group cursor-pointer flex justify-between items-center px-5 py-3 rounded-2xl text-xs font-bold transition-all ${
+            currentFolder === f
+              ? "active-folder"
+              : "hover:bg-white/5 text-slate-500"
+          }">
+                    <span>📁 ${f}</span>
+                    <button onclick="deleteFolder('${f}', event)" class="opacity-0 group-hover:opacity-100 hover:text-red-400 p-1">🗑️</button>
+                </div>`;
+        });
+
+        document.getElementById("importTargetFolder").innerHTML = folders
+          .map((f) => `<option value="${f}">${f}</option>`)
+          .join("");
+        document.getElementById("folderSelect").innerHTML = folders
+          .map((f) => `<option value="${f}">${f}</option>`)
+          .join("");
+
+        grid.innerHTML = "";
+        const filtered = bookmarks.filter(
+          (b) =>
+            (currentFolder === "all" || b.folder === currentFolder) &&
+            (b.title.toLowerCase().includes(query) ||
+              b.type.toLowerCase().includes(query))
+        );
+
+        filtered.forEach((item) => {
+          const card = document.createElement("div");
+          card.className =
+            "glass p-6 rounded-[2rem] card-hover transition-all relative group flex flex-col justify-between";
+          card.innerHTML = `
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-[9px] font-black uppercase tracking-tighter bg-white/10 px-2 py-1 rounded-lg text-indigo-400">${
+                          item.type
+                        }</span>
+                        <div class="flex gap-2">
+                            <button onclick="toggleFav(${
+                              item.id
+                            })" class="text-lg ${
+            item.favorite
+              ? "text-yellow-400"
+              : "text-slate-700 hover:text-slate-500"
+          }">★</button>
+                            <button onclick="deleteItem(${
+                              item.id
+                            })" class="text-slate-700 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">✕</button>
+                        </div>
+                    </div>
+                    <h3 onclick="showInfo('${item.title.replace(
+                      /'/g,
+                      "\\'"
+                    )}', '${
+            item.type
+          }')" class="cursor-pointer font-extrabold text-xl text-white mb-1 group-hover:text-indigo-400 transition-colors leading-tight">${
+            item.title
+          }</h3>
+                    <p class="text-[10px] text-slate-500 font-bold mb-6">${
+                      item.folder
+                    }</p>
+                </div>
+                
+                <div class="flex items-center justify-between pt-4 border-t border-white/5">
+                    <select onchange="updateStatus(${
+                      item.id
+                    }, this.value)" class="bg-transparent text-[10px] font-black uppercase text-indigo-400 border-none outline-none cursor-pointer">
+                        <option value="Watching" ${
+                          item.status === "Watching" ? "selected" : ""
+                        }>Watching</option>
+                        <option value="Reading" ${
+                          item.status === "Reading" ? "selected" : ""
+                        }>Reading</option>
+                        <option value="Completed" ${
+                          item.status === "Completed" ? "selected" : ""
+                        }>Completed</option>
+                        <option value="Plan to Read" ${
+                          item.status === "Plan to Read" ? "selected" : ""
+                        }>On Hold</option>
+                    </select>
+                    <button onclick="showInfo('${item.title.replace(
+                      /'/g,
+                      "\\'"
+                    )}', '${
+            item.type
+          }')" class="text-[10px] font-black text-slate-500 hover:text-white transition-colors">INFO →</button>
+                </div>
+            `;
+          grid.appendChild(card);
+        });
+      }
+
+      window.exportToPDF = () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text("ZEN PRO MAX - COLLECTION", 14, 20);
+        doc.autoTable({
+          head: [["Title", "Type", "Folder", "Status"]],
+          body: bookmarks.map((b) => [b.title, b.type, b.folder, b.status]),
+          startY: 30,
+          theme: "grid",
+          headStyles: { fillColor: [99, 102, 241] },
+        });
+        doc.save("MyLibrary.pdf");
+      };
+
+      render();
+    </script>
+  </body>
+</html>
