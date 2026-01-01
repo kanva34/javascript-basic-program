@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FandomForest 🦊📚</title>
+
+    <link rel="stylesheet" href="styles.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+    <script async src="https://cse.google.com/cse.js?cx=23d84bbb43e29465c"></script>
+
+    <script>
+      // PDF.js worker setup
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+    </script>
+  </head>
+
+  <body>
+    <div class="container">
+      <header class="main-header glass">
+        <div class="logo-section">
+          <h1 class="logo-text">FandomForest</h1>
+          <p class="logo-sub">The Ultimate Library for your Weeb Needs</p>
+        </div>
+
+        <div class="header-actions">
+          <button onclick="exportToPDF()" class="btn btn-export">
+            Export PDF
+          </button>
+          <button onclick="toggleAddModal()" class="btn btn-primary">
+            + Add New Entry
+          </button>
+        </div>
+      </header>
+
+      <div class="main-layout">
+        
+        <aside class="sidebar">
+          
+          <div class="glass panel folder-panel">
+            <h2 class="section-title">Folders</h2>
+            <nav id="folderList" class="folder-nav"></nav>
+            <button onclick="createNewFolder()" class="btn-dashed">
+              + Create Folder
+            </button>
+          </div>
+
+          <div class="glass panel import-panel">
+            <h2 class="section-title text-purple">Quick Import</h2>
+            
+            <input
+              type="file"
+              id="bulkFileInput"
+              accept=".txt,.pdf"
+              class="file-input"
+            />
+
+            <p class="label-tiny">IMPORT TO:</p>
+            <select id="importTargetFolder" class="input-select"></select>
+
+            <button onclick="handleBulkImport()" class="btn btn-secondary">
+              Bulk Upload (.txt/.pdf)
+            </button>
+          </div>
+        </aside>
+
+        <main class="content-area">
+          <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input
+              id="searchInput"
+              oninput="render()"
+              type="text"
+              placeholder="Search your library (Titles, Folders, Types)..."
+              class="search-input"
+            />
+          </div>
+
+          <div class="cse-container">
+            <div class="gcse-search"></div>
+          </div>
+
+          <div id="bookmarkGrid" class="cards-grid"></div>
+        </main>
+      </div>
+    </div>
+
+    <div id="detailModal" class="modal-overlay hidden">
+      <div class="modal-content glass large-modal">
+        <button onclick="closeModal()" class="close-btn">&times;</button>
+
+        <div id="modalLoading" class="loader-container hidden">
+          <div class="loader"></div>
+          <p class="loading-text">FETCHING FROM GOOGLE...</p>
+        </div>
+
+        <div id="modalBody" class="modal-body"></div>
+      </div>
+    </div>
+
+    <div id="addModal" class="modal-overlay hidden">
+      <div class="modal-content glass small-modal">
+        <h2 class="modal-title">Add New Content</h2>
+
+        <div class="form-stack">
+          <div class="form-group">
+            <label class="label-tiny">TITLE</label>
+            <input
+              id="titleInput"
+              type="text"
+              placeholder="e.g. Solo Leveling"
+              class="input-text"
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="label-tiny">TYPE</label>
+              <select id="typeSelect" class="input-select">
+                <option value="Anime">Anime</option>
+                <option value="Manga">Manga</option>
+                <option value="Manhwa">Manhwa</option>
+                <option value="Manhua">Manhua</option>
+                <option value="Light Novel">Light Novel</option>
+                <option value="Novel">Novel</option>
+                <option value="Comic">Comic</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="label-tiny">STATUS</label>
+              <select id="statusSelect" class="input-select">
+                <option value="Watching">Watching</option>
+                <option value="Reading">Reading</option>
+                <option value="Completed">Completed</option>
+                <option value="Plan to Read">On Hold</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="label-tiny">FOLDER</label>
+            <select id="folderSelect" class="input-select"></select>
+          </div>
+
+          <button onclick="addItem()" class="btn btn-primary full-width">
+            Save Entry
+          </button>
+          <button onclick="toggleAddModal()" class="btn-text">
+            Discard
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
